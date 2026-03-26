@@ -1,32 +1,28 @@
-// app.js — Ponto de entrada da aplicação. Configuração e montagem.
+// Contexto: API REST de cadastro de alunos e matérias
+
+/* Definição: Em uma faculdade, é necessário cadastrar os alunos e associá-los às suas matérias, que também são cadastradas manualmente.
+Um aluno pode estar matriculado em várias matérias, e uma matéria pode ter vários alunos matriculados. 
+A API deve permitir o cadastro de alunos, matérias e a associação entre eles. 
+Além disso, deve ser possível consultar os alunos matriculados em uma matéria específica e as matérias em que um aluno está matriculado.
+*/
+
 
 const express = require("express");
 const app = express();
 
-// Importação das rotas organizadas por recurso
-const coisaRoutes = require("./routes/coisaRoutes");
+// Importação das rotas
+const alunoRoutes = require("./routes/alunoRoutes");
+const materiaRoutes = require("./routes/materiaRoutes");
 
-// Importação do middleware centralizado de erros
+// Handler de erros
 const errorHandler = require("./middlewares/errorHandler");
 
-// =============================================
-// Configuração de Middlewares Globais
-// =============================================
 app.use(express.json());
-
-// =============================================
-// Montagem das Rotas
-// =============================================
-app.use("/alguma-coisa", coisaRoutes);
-
-// =============================================
-// Middleware de Tratamento Centralizado de Erros
-// =============================================
+app.use("/alunos", alunoRoutes);
+app.use("/materias", materiaRoutes);
 app.use(errorHandler);
 
-// =============================================
-// Inicialização do Servidor
-// =============================================
+// Inicia o servidor
 const PORTA = 3000;
 
 app.listen(PORTA, function () {
