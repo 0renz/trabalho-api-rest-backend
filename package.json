@@ -1,12 +1,17 @@
 {
   "name": "api-faculdade",
   "version": "1.0.0",
-  "description": "API REST de cadastro de alguma coisa",
+  "description": "API REST de cadastro de alunos e matérias com PostgreSQL e Sequelize",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "seed": "node scripts/seed.js"
   },
   "dependencies": {
-    "express": "^4.22.1"
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "pg": "^8.20.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8"
   }
 }

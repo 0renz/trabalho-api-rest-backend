@@ -1,67 +1,42 @@
-let materias = [
-  { id: 1, nome: "Matemática", codigo: "MAT001"},
-  { id: 2, nome: "Física", codigo: "FIS001"},
-  { id: 3, nome: "Programação", codigo: "PRG001"},
-];
-
-let proximoId = 4;
+const { Materia } = require('../models');
 
 function buscarTodos() {
-  return materias;
+  return Materia.findAll();
 }
 
 function buscarPorId(id) {
-  return materias.find(function (materia) {
-    return materia.id === id;
-  });
+  return Materia.findByPk(id);
 }
 
-function inserir(materia) {
-  const novaMateria = {
-    id: proximoId,
+async function inserir(materia) {
+  return await Materia.create({
     nome: materia.nome,
     codigo: materia.codigo,
-  };
-
-  proximoId = proximoId + 1;
-  materias.push(novaMateria);
-
-  return novaMateria;
+  });
 }
 
-function atualizar(id, dadosAtualizados) {
-  const indice = materias.findIndex(function (materia) {
-    return materia.id === id;
-  });
-
-  if (indice === -1) {
+async function atualizar(id, dadosAtualizados) {
+  const materia = await Materia.findByPk(id);
+  
+  if (!materia) {
     return null;
   }
 
-  materias[indice] = {
-    id: id,
+  return await materia.update({
     nome: dadosAtualizados.nome,
     codigo: dadosAtualizados.codigo,
-  };
-
-  return materias[indice];
+  });
 }
 
-function remover(id) {
-  const indice = materias.findIndex(function (materia) {
-    return materia.id === id;
-  });
-
-  if (indice === -1) {
+async function remover(id) {
+  const materia = await Materia.findByPk(id);
+  
+  if (!materia) {
     return null;
   }
 
-  const removido = materias.splice(indice, 1);
-  return removido[0];
-}
-
-function limparTudo() {
-  materias = [];
+  await materia.destroy();
+  return materia;
 }
 
 module.exports = {
@@ -70,5 +45,4 @@ module.exports = {
   inserir: inserir,
   atualizar: atualizar,
   remover: remover,
-  limparTudo: limparTudo,
 };

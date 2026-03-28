@@ -1,69 +1,44 @@
-let alunos = [
-  { id: 1, nome: "João Silva", email: "joao@email.com", matricula: "2024001" },
-  { id: 2, nome: "Maria Santos", email: "maria@email.com", matricula: "2024002" },
-  { id: 3, nome: "Pedro Costa", email: "pedro@email.com", matricula: "2024003" },
-];
-
-let proximoId = 4;
+const { Aluno } = require('../models');
 
 function buscarTodos() {
-  return alunos;
+  return Aluno.findAll();
 }
 
 function buscarPorId(id) {
-  return alunos.find(function (aluno) {
-    return aluno.id === id;
-  });
+  return Aluno.findByPk(id);
 }
 
-function inserir(aluno) {
-  const novoAluno = {
-    id: proximoId,
+async function inserir(aluno) {
+  return await Aluno.create({
     nome: aluno.nome,
     email: aluno.email,
     matricula: aluno.matricula,
-  };
-
-  proximoId = proximoId + 1;
-  alunos.push(novoAluno);
-
-  return novoAluno;
+  });
 }
 
-function atualizar(id, dadosAtualizados) {
-  const indice = alunos.findIndex(function (aluno) {
-    return aluno.id === id;
-  });
-
-  if (indice === -1) {
+async function atualizar(id, dadosAtualizados) {
+  const aluno = await Aluno.findByPk(id);
+  
+  if (!aluno) {
     return null;
   }
 
-  alunos[indice] = {
-    id: id,
+  return await aluno.update({
     nome: dadosAtualizados.nome,
     email: dadosAtualizados.email,
     matricula: dadosAtualizados.matricula,
-  };
-
-  return alunos[indice];
+  });
 }
 
-function remover(id) {
-  const indice = alunos.findIndex(function (aluno) {
-    return aluno.id === id;
-  });
-
-  if (indice === -1) {
+async function remover(id) {
+  const aluno = await Aluno.findByPk(id);
+  
+  if (!aluno) {
     return null;
   }
 
-  const removido = alunos.splice(indice, 1);
-  return removido[0];
-}
-
-function limparTudo() {
-  alunos = [];
+  await aluno.destroy();
+  return aluno;
 }
 
 module.exports = {
@@ -72,5 +47,4 @@ module.exports = {
   inserir: inserir,
   atualizar: atualizar,
   remover: remover,
-  limparTudo: limparTudo,
 };

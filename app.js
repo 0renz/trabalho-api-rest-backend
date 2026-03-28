@@ -6,8 +6,9 @@ A API deve permitir o cadastro de alunos, matérias e a associação entre eles.
 Além disso, deve ser possível consultar os alunos matriculados em uma matéria específica e as matérias em que um aluno está matriculado.
 */
 
-
 const express = require("express");
+const { sequelize } = require("./models");
+
 const app = express();
 
 // Importação das rotas
@@ -22,9 +23,20 @@ app.use("/alunos", alunoRoutes);
 app.use("/materias", materiaRoutes);
 app.use(errorHandler);
 
-// Inicia o servidor
+// Escrita da documentação OpenAPI (Swagger) da API, disponível em endpoint acessível (ex.: /api-docs ).
+app.use("/api-docs", express.static("docs"));
+
+// Sincroniza os modelos com o banco de dados e inicia o servidor
 const PORTA = 3000;
 
-app.listen(PORTA, function () {
-  console.log("API rodando em http://localhost:" + PORTA);
+// Sincroniza o banco de dados
+sequelize.sync({ alter: false }).then(() => {
+  console.log("Banco de dados sincronizado!");
+  
+  app.listen(PORTA, function () {
+    console.log("API rodando em http://localhost:" + PORTA);
+  });
+}).catch(erro => {
+  console.error("Erro ao sincronizar banco de dados:", erro);
+  process.exit(1);
 });

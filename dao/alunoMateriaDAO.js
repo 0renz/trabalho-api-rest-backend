@@ -1,68 +1,57 @@
-let alunosMaterias = [
-  { id: 1, alunoId: 1, materiaId: 1 },
-  { id: 2, alunoId: 1, materiaId: 2 },
-  { id: 3, alunoId: 2, materiaId: 1 },
-  { id: 4, alunoId: 2, materiaId: 3 },
-  { id: 5, alunoId: 3, materiaId: 2 },
-];
-
-let proximoId = 6;
+const { Aluno, Materia, AlunoMateria } = require('../models');
 
 function buscarTodos() {
-  return alunosMaterias;
+  return AlunoMateria.findAll();
 }
 
 function buscarPorAlunoId(alunoId) {
-  return alunosMaterias.filter(function (am) {
-    return am.alunoId === alunoId;
+  return AlunoMateria.findAll({
+    where: { alunoId: alunoId }
   });
 }
 
 function buscarPorMateriaId(materiaId) {
-  return alunosMaterias.filter(function (am) {
-    return am.materiaId === materiaId;
+  return AlunoMateria.findAll({
+    where: { materiaId: materiaId }
   });
 }
 
-function verificarAssociacao(alunoId, materiaId) {
-  return alunosMaterias.find(function (am) {
-    return am.alunoId === alunoId && am.materiaId === materiaId;
+async function verificarAssociacao(alunoId, materiaId) {
+  return await AlunoMateria.findOne({
+    where: {
+      alunoId: alunoId,
+      materiaId: materiaId
+    }
   });
 }
 
-function associar(alunoId, materiaId) {
+async function associar(alunoId, materiaId) {
   // Verifica se já está associado
-  if (verificarAssociacao(alunoId, materiaId)) {
+  const jaAssociado = await verificarAssociacao(alunoId, materiaId);
+  if (jaAssociado) {
     return null;
   }
 
-  const novaAssociacao = {
-    id: proximoId,
+  return await AlunoMateria.create({
     alunoId: alunoId,
     materiaId: materiaId,
-  };
-
-  proximoId = proximoId + 1;
-  alunosMaterias.push(novaAssociacao);
-
-  return novaAssociacao;
+  });
 }
 
-function desassociar(alunoId, materiaId) {
-  const indice = alunosMaterias.findIndex(function (am) {
-    return am.alunoId === alunoId && am.materiaId === materiaId;
+async function desassociar(alunoId, materiaId) {
+  const associacao = await AlunoMateria.findOne({
+    where: {
+      alunoId: alunoId,
+      materiaId: materiaId
+    }
   });
 
-  if (indice === -1) {
+  if (!associacao) {
     return null;
   }
 
-  const removida = alunosMaterias.splice(indice, 1);
-  return removida[0];
-}
-
-function limparTudo() {
-  alunosMaterias = [];
+  await associacao.destroy();
+  return associacao;
 }
 
 module.exports = {
@@ -72,5 +61,4 @@ module.exports = {
   verificarAssociacao: verificarAssociacao,
   associar: associar,
   desassociar: desassociar,
-  limparTudo: limparTudo,
 };

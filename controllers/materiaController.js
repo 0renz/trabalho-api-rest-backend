@@ -4,21 +4,20 @@ const alunoDAO = require("../dao/alunoDAO");
 const alunoMateriaDAO = require("../dao/alunoMateriaDAO");
 
 // Função para cadastrar uma matéria
-
-function cadastrarMateria(req, res) {
+async function cadastrarMateria(req, res) {
   try {
-    const { nome, descricao} = req.body;
+    const { nome, codigo } = req.body;
 
     // Validação básica
-    if (!nome || !descricao) {
+    if (!nome || !codigo) {
       return res.status(400).json({
-        mensagem: "Nome e descrição são obrigatórios",
+        mensagem: "Nome e código são obrigatórios",
       });
     }
 
-    const novaMateria = materiaDAO.inserir({
+    const novaMateria = await materiaDAO.inserir({
       nome: nome,
-      descricao: descricao,
+      codigo: codigo,
     });
 
     res.status(201).json({
@@ -34,22 +33,29 @@ function cadastrarMateria(req, res) {
 }
 
 // Função para buscar todas as matérias
-const buscarTodasAsMaterias = async (req, res) => {
+async function buscarTodasAsMaterias(req, res) {
   try {
     const materias = await materiaDAO.buscarTodos();
-    res.json(materias);
+    res.status(200).json({
+      mensagem: "Matérias encontradas",
+      materias: materias,
+      quantidade: materias.length,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Erro ao buscar matérias", error: error.message });
+    res.status(500).json({
+      mensagem: "Erro ao buscar matérias",
+      erro: error.message,
+    });
   }
-};
+}
 
 // Consultar alunos por matéria
-function consultarAlunosPorMateria(req, res) {
+async function consultarAlunosPorMateria(req, res) {
   try {
     const materiaId = parseInt(req.params.materiaId);
 
     // Validação: matéria deve existir
-    const materia = materiaDAO.buscarPorId(materiaId);
+    const materia = await materiaDAO.buscarPorId(materiaId);
     if (!materia) {
       return res.status(404).json({
         mensagem: "Matéria não encontrada",
@@ -57,12 +63,14 @@ function consultarAlunosPorMateria(req, res) {
     }
 
     // Buscar todas as associações para essa matéria
-    const associacoes = alunoMateriaDAO.buscarPorMateriaId(materiaId);
+    const associacoes = await alunoMateriaDAO.buscarPorMateriaId(materiaId);
 
     // Montar lista de alunos
-    const alunos = associacoes.map(function (assoc) {
-      return alunoDAO.buscarPorId(assoc.alunoId);
-    });
+    const alunos = await Promise.all(
+      associacoes.map(function (assoc) {
+        return alunoDAO.buscarPorId(assoc.alunoId);
+      })
+    );
 
     res.status(200).json({
       mensagem: "Alunos encontrados",
@@ -79,7 +87,7 @@ function consultarAlunosPorMateria(req, res) {
 }
 
 module.exports = {
-  cadastrarMateria,
-  buscarTodasAsMaterias,
-  consultarAlunosPorMateria
+  cadastrarMateria: cadastrarMateria,
+  buscarTodasAsMaterias: buscarTodasAsMaterias,
+  consultarAlunosPorMateria: consultarAlunosPorMateria,
 };
