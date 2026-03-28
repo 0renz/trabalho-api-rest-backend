@@ -1,0 +1,395 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API de Cadastro de Alunos e Matérias",
+    "description": "API REST para gerenciamento de alunos e matérias em uma faculdade. Permite cadastrar alunos e matérias, associá-los entre si e consultar as relações.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Suporte da API"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor local de desenvolvimento"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Alunos",
+      "description": "Operações relacionadas ao cadastro e consulta de alunos"
+    },
+    {
+      "name": "Matérias",
+      "description": "Operações relacionadas ao cadastro e consulta de matérias"
+    }
+  ],
+  "paths": {
+    "/alunos": {
+      "post": {
+        "tags": ["Alunos"],
+        "summary": "Cadastrar um novo aluno",
+        "description": "Cria um novo aluno com nome, e-mail e matrícula.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AlunoInput" },
+              "example": {
+                "nome": "Ana Oliveira",
+                "email": "ana@email.com",
+                "matricula": "2024004"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Aluno cadastrado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": { "type": "string", "example": "Aluno cadastrado com sucesso" },
+                    "aluno": { "$ref": "#/components/schemas/Aluno" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados obrigatórios ausentes",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErroBadRequest" },
+                "example": { "mensagem": "Nome, email e matrícula são obrigatórios" }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ErroServidor" }
+        }
+      },
+      "get": {
+        "tags": ["Alunos"],
+        "summary": "Listar todos os alunos",
+        "description": "Retorna a lista completa de alunos cadastrados.",
+        "responses": {
+          "200": {
+            "description": "Lista de alunos retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": { "type": "string", "example": "Alunos encontrados" },
+                    "alunos": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Aluno" }
+                    },
+                    "quantidade": { "type": "integer", "example": 3 }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ErroServidor" }
+        }
+      }
+    },
+    "/alunos/{alunoId}/materias": {
+      "get": {
+        "tags": ["Alunos"],
+        "summary": "Consultar matérias de um aluno",
+        "description": "Retorna todas as matérias em que o aluno especificado está matriculado.",
+        "parameters": [
+          { "$ref": "#/components/parameters/alunoId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matérias do aluno retornadas com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": { "type": "string", "example": "Matérias encontradas" },
+                    "aluno": { "$ref": "#/components/schemas/Aluno" },
+                    "materias": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Materia" }
+                    },
+                    "quantidade": { "type": "integer", "example": 2 }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Aluno não encontrado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErroNaoEncontrado" },
+                "example": { "mensagem": "Aluno não encontrado" }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ErroServidor" }
+        }
+      }
+    },
+    "/alunos/{alunoId}/materias/{materiaId}": {
+      "post": {
+        "tags": ["Alunos"],
+        "summary": "Associar aluno a uma matéria",
+        "description": "Matricula o aluno especificado na matéria especificada. Retorna erro se o aluno já estiver matriculado nessa matéria.",
+        "parameters": [
+          { "$ref": "#/components/parameters/alunoId" },
+          { "$ref": "#/components/parameters/materiaId" }
+        ],
+        "responses": {
+          "201": {
+            "description": "Aluno associado à matéria com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": { "type": "string", "example": "Aluno associado à matéria com sucesso" },
+                    "associacao": { "$ref": "#/components/schemas/Associacao" },
+                    "aluno": { "$ref": "#/components/schemas/Aluno" },
+                    "materia": { "$ref": "#/components/schemas/Materia" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Aluno já matriculado nesta matéria",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErroBadRequest" },
+                "example": { "mensagem": "O aluno já está matriculado nesta matéria" }
+              }
+            }
+          },
+          "404": {
+            "description": "Aluno ou matéria não encontrado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErroNaoEncontrado" },
+                "examples": {
+                  "alunoNaoEncontrado": {
+                    "summary": "Aluno não encontrado",
+                    "value": { "mensagem": "Aluno não encontrado" }
+                  },
+                  "materiaNaoEncontrada": {
+                    "summary": "Matéria não encontrada",
+                    "value": { "mensagem": "Matéria não encontrada" }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ErroServidor" }
+        }
+      }
+    },
+    "/materias": {
+      "post": {
+        "tags": ["Matérias"],
+        "summary": "Cadastrar uma nova matéria",
+        "description": "Cria uma nova matéria com nome e código.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MateriaInput" },
+              "example": {
+                "nome": "Química",
+                "codigo": "QUI001"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Matéria cadastrada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": { "type": "string", "example": "Matéria cadastrada com sucesso" },
+                    "materia": { "$ref": "#/components/schemas/Materia" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados obrigatórios ausentes",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErroBadRequest" },
+                "example": { "mensagem": "Nome e descrição são obrigatórios" }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ErroServidor" }
+        }
+      },
+      "get": {
+        "tags": ["Matérias"],
+        "summary": "Listar todas as matérias",
+        "description": "Retorna a lista completa de matérias cadastradas.",
+        "responses": {
+          "200": {
+            "description": "Lista de matérias retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Materia" }
+                }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ErroServidor" }
+        }
+      }
+    },
+    "/materias/{materiaId}/alunos": {
+      "get": {
+        "tags": ["Matérias"],
+        "summary": "Consultar alunos de uma matéria",
+        "description": "Retorna todos os alunos matriculados na matéria especificada.",
+        "parameters": [
+          { "$ref": "#/components/parameters/materiaId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alunos da matéria retornados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mensagem": { "type": "string", "example": "Alunos encontrados" },
+                    "materia": { "$ref": "#/components/schemas/Materia" },
+                    "alunos": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Aluno" }
+                    },
+                    "quantidade": { "type": "integer", "example": 2 }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Matéria não encontrada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErroNaoEncontrado" },
+                "example": { "mensagem": "Matéria não encontrada" }
+              }
+            }
+          },
+          "500": { "$ref": "#/components/responses/ErroServidor" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Aluno": {
+        "type": "object",
+        "properties": {
+          "id":        { "type": "integer", "example": 1 },
+          "nome":      { "type": "string",  "example": "João Silva" },
+          "email":     { "type": "string",  "format": "email", "example": "joao@email.com" },
+          "matricula": { "type": "string",  "example": "2024001" }
+        }
+      },
+      "AlunoInput": {
+        "type": "object",
+        "required": ["nome", "email", "matricula"],
+        "properties": {
+          "nome":      { "type": "string", "example": "Ana Oliveira" },
+          "email":     { "type": "string", "format": "email", "example": "ana@email.com" },
+          "matricula": { "type": "string", "example": "2024004" }
+        }
+      },
+      "Materia": {
+        "type": "object",
+        "properties": {
+          "id":     { "type": "integer", "example": 1 },
+          "nome":   { "type": "string",  "example": "Matemática" },
+          "codigo": { "type": "string",  "example": "MAT001" }
+        }
+      },
+      "MateriaInput": {
+        "type": "object",
+        "required": ["nome", "codigo"],
+        "properties": {
+          "nome":   { "type": "string", "example": "Química" },
+          "codigo": { "type": "string", "example": "QUI001" }
+        }
+      },
+      "Associacao": {
+        "type": "object",
+        "properties": {
+          "id":        { "type": "integer", "example": 6 },
+          "alunoId":   { "type": "integer", "example": 1 },
+          "materiaId": { "type": "integer", "example": 3 }
+        }
+      },
+      "ErroBadRequest": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string" }
+        }
+      },
+      "ErroNaoEncontrado": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string" }
+        }
+      },
+      "ErroServidor": {
+        "type": "object",
+        "properties": {
+          "mensagem": { "type": "string", "example": "Ocorreu um erro no servidor" },
+          "erro":     { "type": "string", "example": "Descrição técnica do erro" }
+        }
+      }
+    },
+    "parameters": {
+      "alunoId": {
+        "name": "alunoId",
+        "in": "path",
+        "required": true,
+        "description": "ID numérico do aluno",
+        "schema": { "type": "integer", "example": 1 }
+      },
+      "materiaId": {
+        "name": "materiaId",
+        "in": "path",
+        "required": true,
+        "description": "ID numérico da matéria",
+        "schema": { "type": "integer", "example": 1 }
+      }
+    },
+    "responses": {
+      "ErroServidor": {
+        "description": "Erro interno do servidor",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErroServidor" }
+          }
+        }
+      }
+    }
+  }
+}
