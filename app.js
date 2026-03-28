@@ -14,11 +14,13 @@ const app = express();
 // Importação das rotas
 const alunoRoutes = require("./routes/alunoRoutes");
 const materiaRoutes = require("./routes/materiaRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 // Handler de erros
 const errorHandler = require("./middlewares/errorHandler");
 
 app.use(express.json());
+app.use("/auth", authRoutes);
 app.use("/alunos", alunoRoutes);
 app.use("/materias", materiaRoutes);
 app.use(errorHandler);
