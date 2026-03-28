@@ -8,7 +8,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'api_faculdade',
-  logging: false // Defina como console.log para ver as queries SQL
+  logging: false
 });
 
 module.exports = sequelize;
